@@ -1,8 +1,3 @@
-function init_device() {
-    bluetooth.startUartService()
-    basic.showIcon(IconNames.Happy)
-}
-
 function open_door(x: number) {
     let motor_door = NaN
     if (x == 1) {
@@ -14,23 +9,14 @@ function open_door(x: number) {
     } else if (x == 4) {
         motor_door = motor.Motors.M4
     }
-    
-    if (motor_door != NaN) {
-        basic.showNumber(motor_door)
-        motor.MotorRun(motor_door, motor.Dir.CW, 255)
-        basic.pause(800)
-        motor.motorStop(motor_door)
-    }
-    
+
+    motor.MotorRun(motor_door, motor.Dir.CW, 255)
+    basic.pause(800)
+    motor.motorStop(motor_door)
     update()
 }
 
 function update() {
-    
-    if (!connected) {
-        return
-    }
-    
     bluetooth.uartWriteLine("" + input.temperature() + ":" + pins.digitalReadPin(DigitalPin.P0) + ":" + pins.digitalReadPin(DigitalPin.P1))
 }
 
@@ -60,11 +46,18 @@ bluetooth.onUartDataReceived(serial.delimiters(Delimiters.SemiColon), function o
     
 })
 forever(function on_forever() {
-    
-    
     door_1 = pins.digitalReadPin(DigitalPin.P0)
-    pins.analogWritePin(AnalogPin.P16, (1 - door_1) * 1023)
+    pins.digitalWritePin(DigitalPin.P16, (1 - door_1))
     door_2 = pins.digitalReadPin(DigitalPin.P1)
-    pins.analogWritePin(AnalogPin.P15, (1 - door_2) * 1023)
+    pins.digitalWritePin(DigitalPin.P15, (1 - door_2))
+    if (door_1 == 1 && door_2 == 1) {
+        basic.showIcon(IconNames.Yes)
+    } else if (door_1 == 0) {
+        basic.showNumber(1)
+    } else if (door_2 == 0) {
+        basic.showNumber(2)
+    }
+    
 })
-init_device()
+bluetooth.startUartService()
+basic.showIcon(IconNames.Happy)
